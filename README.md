@@ -4,6 +4,8 @@ Pipeline para mapear, a partir do Portal Nacional de Contratações Públicas, p
 
 O corpus ainda não existe. Em 2026-09-30 o host `pncp.gov.br` não completou a ligação a partir deste ambiente. O cliente está pronto para a sonda e para o mês piloto; não inventa respostas.
 
+Cópia de trabalho: `C:\Users\marce\Documents\PublicProcurement-IA` (fora do Google Drive, para o `.venv` funcionar neste Windows).
+
 ## Requisitos
 
 Python 3.12. O comando `python` desta máquina é o 3.14 da Anaconda, e o `PyYAML==6.0.2` não tem wheel para 3.14: a instalação tenta compilar e falha. O ambiente abaixo usa o Python 3.12.13.
@@ -21,7 +23,7 @@ $env:PYTHONPATH = "src"
 .\.venv\Scripts\python -m collect probe
 ```
 
-Se a pasta do repositório estiver num disco sincronizado e a criação de `.venv` devolver "Acesso negado", crie o ambiente noutro disco e use esse `python` com `PYTHONPATH=src`. Foi o que ocorreu aqui: o ambiente ficou em `%USERPROFILE%\.venvs\pncp-ia`.
+`probe` pede uma página, com o exemplo do manual: 1 a 2 de agosto de 2023, modalidade 8 (dispensa), `tamanhoPagina` 10.
 
 `pilot` pede os cabeçalhos de agosto de 2026, as 13 modalidades, um dia de cada vez. Só faz sentido depois de a sonda devolver JSON.
 

@@ -21,3 +21,5 @@ A janela de publicação ficou fechada de 1 de janeiro de 2021 a 30 de setembro 
 O cliente pede `GET /v1/contratacoes/publicacao` com os quatro parâmetros obrigatórios do manual, guarda o corpo HTTP sem o reescrever e só então extrai o envelope documentado (`data`, `totalRegistros`, `totalPaginas`, `numeroPagina`, `paginasRestantes`, `empty`). Se uma resposta 200 não trouxer essas chaves, a coleta para. Isso é de propósito: o primeiro JSON real tem de confirmar o manual antes de se percorrer o mês.
 
 A sonda foi executada em 2026-09-30 e não devolveu corpo. O erro, depois das repetições, foi `RemoteProtocolError: Server disconnected without sending a response`. Os testes locais, com páginas sintéticas, passaram (paginação, retoma sem duplicar o JSONL, hash do corpo, parâmetros do pedido). Agosto de 2026 continua por coletar quando o host passar a responder.
+
+A cópia de trabalho passou de `G:\O meu disco\Main\Cursos\ISCTE\PhDPA\MyPapers\PublicProcurement-IA` (Google Drive) para `C:\Users\marce\Documents\PublicProcurement-IA`. No Drive, a criação de `.venv` falhava com acesso negado. Nesta pasta o ambiente local criou-se e os 17 testes voltaram a passar.
