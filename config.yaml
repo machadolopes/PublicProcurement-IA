@@ -1,0 +1,55 @@
+# Parâmetros do estudo. O código lê este ficheiro; não duplica estes valores.
+schema_version: 1
+
+# Janela fechada em 2026-09-30. Não calcular "hoje" em tempo de execução.
+window:
+  start: "2021-01-01"
+  end: "2026-09-30"
+
+# Último mês civil completo dentro da janela. Ver docs/decisions.md D011.
+pilot:
+  start: "2026-08-01"
+  end: "2026-08-31"
+
+# Primeira chamada, igual ao exemplo do Manual das APIs de Consultas, secção 6.3.
+probe:
+  start: "2023-08-01"
+  end: "2023-08-02"
+  modalidade: 8
+  pagina: 1
+  tamanho_pagina: 10
+
+api:
+  consulta_base_url: "https://pncp.gov.br/api/consulta"
+  integracao_base_url: "https://pncp.gov.br/api/pncp"
+  publicacao_path: "/v1/contratacoes/publicacao"
+  manual_consulta: "Manual das APIs de Consultas, versão 1.0"
+  manual_integracao: "Manual de Integração, índice v2.6; corpo lido como v2.5 (11/06/2026)"
+
+# Códigos da secção 5.2 do manual de consultas. A lista viva ainda não foi lida.
+modalidades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+
+http:
+  timeout_seconds: 60
+  max_retries: 5
+  backoff_initial_seconds: 1
+  backoff_max_seconds: 60
+  # Pausa nossa. O manual não publica rate limit (D009).
+  pause_seconds: 1.0
+  # Cabeçalhos HTTP são ASCII. Não usar acentos aqui.
+  user_agent: "PublicProcurement-IA/0.1 (research; reproducible collection)"
+  accept: "application/json"
+  # Omissão documentada para /contratacoes/publicacao. Não subir a 500 antes de uma resposta real.
+  tamanho_pagina_publicacao: 50
+
+collect:
+  # O manual não fixa o intervalo máximo. Um dia é escolha nossa (D011).
+  chunk_days: 1
+  raw_dirname: "data/raw"
+
+seeds:
+  global: 42
+  pythonhashseed: 42
+
+# Preencher com o DOI do Zenodo ou do OSF quando o snapshot for depositado.
+doi: ""
