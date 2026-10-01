@@ -22,20 +22,33 @@ probe:
 api:
   consulta_base_url: "https://pncp.gov.br/api/consulta"
   integracao_base_url: "https://pncp.gov.br/api/pncp"
+  # Busca textual do portal (a mesma do site). Não está no Manual de Consultas (D016).
+  search_base_url: "https://pncp.gov.br/api/search/"
   publicacao_path: "/v1/contratacoes/publicacao"
   manual_consulta: "Manual das APIs de Consultas, versão 1.0"
   manual_integracao: "Manual de Integração, índice v2.6; corpo lido como v2.5 (11/06/2026)"
 
-# Códigos da secção 5.2 do manual de consultas. A lista viva ainda não foi lida.
-modalidades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+# Coleta por palavra-chave via /api/search/ (caminho 1).
+search:
+  status: "todos"
+  ordenacao: "-data"
+  tam_pagina: 50
+  # Queries versionadas em src/filter/search_queries.yaml
+  queries_path: "src/filter/search_queries.yaml"
+
+# Códigos ativos em 2026-09-30 via GET /api/pncp/v1/modalidades?statusAtivo=true.
+# Snapshot em data/raw/_modalidades_ativas.json. Manual de consultas só listava 1–13 (D013).
+modalidades: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 http:
-  timeout_seconds: 60
-  max_retries: 5
-  backoff_initial_seconds: 1
-  backoff_max_seconds: 60
-  # Pausa nossa. O manual não publica rate limit (D009).
-  pause_seconds: 1.0
+  timeout_seconds: 90
+  # Pausa mínima entre pedidos (D009/D014). O 429 mostrou que 1s entre janelas não bastava
+  # quando a pausa só corria entre páginas da mesma janela. /api/search/ também desliga
+  # a ligação com frequência — 3.5s reduz RemoteProtocolError em rajada.
+  pause_seconds: 3.5
+  max_retries: 12
+  backoff_initial_seconds: 2
+  backoff_max_seconds: 120
   # Cabeçalhos HTTP são ASCII. Não usar acentos aqui.
   user_agent: "PublicProcurement-IA/0.1 (research; reproducible collection)"
   accept: "application/json"

@@ -1,0 +1,96 @@
+# Consultas textuais para GET /api/search/?q=...
+# Distinto de terms.yaml (regex local). Aqui são frases enviadas ao índice do portal.
+# Versionado. Ampliação exige revisão humana.
+#
+# Não incluir siglas isoladas (IA, AI, RPA) — ruído alto no buscador.
+# Não incluir guarda-chuvas que o índice parte em palavras soltas
+# (ciência/data science, mineração de dados, análise preditiva, grafia repetida).
+
+schema_version: 1
+
+# Tipos pedíveis ao portal (campo tipos_documento).
+# O corpus do artigo usa só contrato (D018); a busca restringe-se a esse tipo.
+document_types:
+  - contrato
+
+queries:
+  - id: inteligencia_artificial
+    q: "inteligencia artificial"
+    notes: Forma sem acento; o índice trata a variante acentuada como a mesma busca.
+  - id: ia_generativa
+    q: "IA generativa"
+  - id: inteligencia_artificial_generativa
+    q: "inteligencia artificial generativa"
+  - id: machine_learning
+    q: "machine learning"
+  - id: aprendizado_maquina
+    q: "aprendizado de máquina"
+  - id: aprendizagem_maquina
+    q: "aprendizagem de máquina"
+  - id: deep_learning
+    q: "deep learning"
+  - id: aprendizado_profundo
+    q: "aprendizado profundo"
+  - id: redes_neurais
+    q: "redes neurais"
+  - id: rede_neural
+    q: "rede neural"
+  - id: pln
+    q: "processamento de linguagem natural"
+  - id: nlp
+    q: "natural language processing"
+  - id: visao_computacional
+    q: "visão computacional"
+  - id: reconhecimento_facial
+    q: "reconhecimento facial"
+  - id: reconhecimento_imagens
+    q: "reconhecimento de imagens"
+  - id: reconhecimento_voz
+    q: "reconhecimento de voz"
+  - id: speech_to_text
+    q: "speech to text"
+  - id: chatbot
+    q: "chatbot"
+  - id: assistente_virtual
+    q: "assistente virtual"
+  - id: agente_conversacional
+    q: "agente conversacional"
+  - id: llm
+    q: "large language model"
+  - id: modelo_linguagem
+    q: "modelo de linguagem"
+  - id: chatgpt
+    q: "ChatGPT"
+  - id: gpt4
+    q: "GPT-4"
+  - id: copilot
+    q: "Copilot"
+  - id: openai
+    q: "OpenAI"
+  - id: claude
+    q: "Claude"
+  - id: anthropic
+    q: "Anthropic"
+  - id: gemini
+    q: "Gemini"
+  - id: grok
+    q: "Grok"
+  - id: xai
+    q: "xAI"
+    notes: Nome do fornecedor. Não é a sigla isolada IA.
+  - id: llama
+    q: "Llama"
+  - id: mistral
+    q: "Mistral"
+  - id: deepseek
+    q: "DeepSeek"
+  - id: automacao_inteligente
+    q: "automação inteligente"
+  - id: ocr_inteligente
+    q: "OCR inteligente"
+  - id: algoritmos_ia
+    q: "algoritmos de inteligência artificial"
+  - id: sistema_ia
+    q: "sistema de inteligência artificial"
+  - id: solucao_ia
+    q: "solução de inteligência artificial"

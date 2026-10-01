@@ -104,10 +104,90 @@ Cada entrada diz o que foi decidido, porquê, o que foi descartado e o que ainda
 
 **Descartado.** Pedir 2021–2026 numa só chamada. Tratar 365 dias como limite da API: esse número aparece em clientes de terceiros, não no manual.
 
-## D012 — Piloto não executado nesta sessão
+## D012 — Sonda e disponibilidade da API
 
-**Estado:** bloqueio registado em 2026-09-30.
+**Estado:** atualizada em 2026-09-30 (tarde).
 
-**O que aconteceu.** O cliente correu a sonda (`python -m collect probe`: 2023-08-01 a 2023-08-02, modalidade 8, página 1, `tamanhoPagina` 10). O host aceita a ligação e corta-a sem resposta HTTP (`httpx.RemoteProtocolError: Server disconnected without sending a response`), depois das repetições configuradas. `www.gov.br` no mesmo ambiente responde. Não houve corpo para arquivar, portanto não há contagem de registos. O mês piloto não foi pedido.
+**O que aconteceu.** De manhã, a sonda falhou com `RemoteProtocolError`. À tarde, a mesma sonda (`2023-08-01`–`2023-08-02`, modalidade 8, página 1, `tamanhoPagina` 10) devolveu HTTP 200: 10 registos na página, `totalRegistros` 1334, envelope idêntico ao manual. O corpo ficou em `data/raw/contratacoes/publicacao/m08/20230801_20230802/`.
 
-**O que não se fez.** Não se inventou uma resposta, não se trocou a API de Consulta por outra fonte e não se avançou para a coleta completa.
+**Divergências face ao PDF de consultas, observadas no JSON real:**
+
+- Instrumento convocatório: `tipoInstrumentoConvocatorioCodigo` / `tipoInstrumentoConvocatorioNome` (o PDF falava em `…Id`).
+- Campos a mais: `emendaParlamentar`, `fontesOrcamentarias`, `linkProcessoEletronico`, `dataAtualizacaoGlobal`.
+- `poderId` = `N` num registo municipal (além de L/E/J do manual).
+- `valorTotalHomologado` pode ser `null`, não só número ou zero.
+
+**Itens.** `GET https://pncp.gov.br/api/pncp/v1/orgaos/{cnpj}/compras/{ano}/{sequencial}/itens` respondeu 200 **sem** token. O corpo é uma **lista** JSON, não um objeto com chave `itens`. Nomes observados: `situacaoCompraItem` (não `…Id`), `tipoBeneficio` (não `…Id`), e o campo extra `imagem`.
+
+## D013 — Modalidades 1–19 a partir da lista viva
+
+**Estado:** decidida em 2026-09-30.
+
+**Decisão.** A coleta usa os códigos **1 a 19** ativos em `GET /api/pncp/v1/modalidades?statusAtivo=true` (snapshot `data/raw/_modalidades_ativas.json`). O manual de consultas só listava 1–13. Os códigos 14–19 são: Inaplicabilidade da Licitação; Chamada pública; Concorrência eletrónica/presencial internacional; Pregão eletrónico/presencial internacional.
+
+**Porquê.** Omitir 14–19 deixaria fora contratações publicadas sob essas modalidades. A lista viva está na API de integração, não na de consulta (`/api/consulta/v1/modalidades` devolve 404).
+
+**Descartado.** Ficar só nos 13 do PDF. Inventar nomes para códigos sem confirmar na lista viva.
+
+## D014 — HTTP 429 e ritmo entre janelas
+
+**Estado:** decidida em 2026-09-30, após o início do piloto.
+
+**O que aconteceu.** Com `pause_seconds: 1.0` só entre páginas da **mesma** janela, a coleta fez ~10 pedidos em 4 segundos e recebeu HTTP 429 com HTML “Limite de requisições excedido”. O manual de consultas não documenta 429 nem quota.
+
+**Decisão.** (1) Tratar 429 como retentável, com espera de 30 s × 2^(tentativa−1) se não houver `Retry-After`. (2) Aplicar a pausa entre **todos** os pedidos no cliente (`PncpClient._pace`). (3) `pause_seconds` em `config.yaml` (valor corrente 2.5). Continua a ser decisão nossa, não limite oficial publicado.
+
+**Descartado.** Ignorar 429. Inventar um “limite oficial” numérico no README.
+
+## D015 — Só persistir candidatas de IA (filtro lexical na escrita)
+
+**Estado:** decidida em 2026-09-30, após correção do utilizador.
+
+**Contexto.** O piloto `collect pilot` gravava **todas** as contratações publicadas (dezenas de milhares só em agosto/2026 na modalidade 6). O utilizador pediu gravar apenas compras cujo objeto coincida com palavras-chave de IA.
+
+**Limite da API.** `/v1/contratacoes/publicacao` **não** tem parâmetro de busca textual. Continua a ser necessário **pedir** todas as páginas do intervalo. O que muda é o que fica em disco.
+
+**Decisão.** Modo `pilot-ia` / `candidatas`: varre a API, aplica `src/filter/terms.yaml` a `objetoCompra` + `informacaoComplementar`, e grava só as candidatas em `data/raw/candidatas/`. Mantém contagens `scanned` / `matched` por janela em `scan_stats.jsonl` para o fluxograma PRISMA. Itens só se pedem depois, e só para candidatas.
+
+**Regras das siglas (2026-09-30, endurecidas após FPs).** `IA`/`AI` só contam como palavra completa (`\bia\b` / `\bai\b`) ou pontuadas sem espaço (`I.A.`, `A.I.`). Exigem vizinhança tecnológica (software, sistema, monitoramento, generativa, etc.). Rejeitam-se anexos do tipo “Anexo I, IA e IB”, junções entre campos (`… I` + `A …`), `E.T.A. I`, e RPA no sentido de drone/aeronave.
+
+**Sobre o bruto de agosto/2026 já descarregado.** Não se apaga automaticamente. O comando `filter-existing` reaplica o dicionário a esse JSONL e produz `candidatas_from_existing.jsonl` sem novos pedidos HTTP. Novas coletas usam só `pilot-ia` / `candidatas`.
+
+**Descartado.** Inventar um endpoint de “busca por IA”. Continuar a arquivar o JSONL de todas as compras. Filtrar só na API (impossível). Aceitar `i. a` / `a. i` com espaço (falsos positivos em finais de frase).
+
+**Nota.** O prompt original pedia coletar o bruto completo e filtrar localmente. Esta decisão reduz o armazenamento por pedido explícito do estudo; a reprodutibilidade do artigo fica ancorada no dicionário versionado + contagens de varredura + snapshot das candidatas.
+
+## D016 — Busca textual do portal (`/api/search/`) como fonte primária de candidatas
+
+**Estado:** decidida em 2026-09-30, após o utilizador rejeitar a varredura completa da API de Consultas (tempo estimado de dias a semanas).
+
+**Contexto.** A API de Consultas (`/api/consulta/.../publicacao`) não filtra por objeto. A interface web do PNCP usa outro endpoint: `GET https://pncp.gov.br/api/search/?q=...`, com `tipos_documento`, `status`, `data_inicio`, `data_fim`, `pagina`, `tam_pagina`. Resposta observada: `{ "items": [...], "total": N }` (sonda 2026-09-30; “inteligencia artificial” + edital + janela do estudo → `total` ≈ 8500).
+
+**Decisão.** Modo `search-ia`: percorre `src/filter/search_queries.yaml` (frases, não regex) × tipos `edital` e `contrato`, na janela `config.window`, e grava hits únicos em `data/raw/candidatas_search/hits.jsonl` (chave `numero_controle_pncp`). Checkpoints por query. Não usa siglas isoladas (`IA`, `AI`, `RPA`) como `q`.
+
+**Limitações a declarar no artigo.** Este endpoint não está no Manual das APIs de Consultas. O índice pode ter ranking, atraso ou cobertura diferente da listagem por publicação. O `total` anunciado não é um universo enumerável da mesma forma que `totalRegistros` da API de Consultas. A API mostrou timeouts ocasionais; o cliente retenta 429/5xx/transporte.
+
+**Descartado para a série completa.** Continuar a varredura dia×modalidade de `/contratacoes/publicacao` só para achar texto de IA.
+
+**Relação com D015.** O filtro lexical local continua útil para validar/refinar hits e para o dump de agosto já em disco. A descoberta em massa passa a ser `search-ia`.
+
+## D017 — Frases guarda-chuva fora da busca; nomes de modelos dentro
+
+**Estado:** decidida em 2026-09-30, a pedido do estudo, depois de inspecionar os objetos de `ciência de dados`.
+
+**O que aconteceu.** Em 2.396 editais de `ciência de dados`, só 171 traziam a frase no título ou na descrição. O índice casa palavras soltas, inclusive “Ciência” no nome do órgão (Institutos Federais, centros de ciências). `mineração de dados` anunciou 13.701 editais no mesmo padrão. A grafia acentuada de `inteligência artificial` repetiu o total da forma sem acento e acrescentou 4 documentos.
+
+**Decisão.** Saem de `search_queries.yaml`: `inteligência artificial` (acento), `visao computacional`, `ciência de dados`, `data science`, `mineração de dados`, `análise preditiva`, `modelagem preditiva`, `análise de sentimentos`. Entram, ao lado de ChatGPT/OpenAI/Copilot: Claude, Anthropic, Gemini, Grok, xAI, Llama, Mistral, DeepSeek. A sigla isolada `IA` continua de fora. Hits já gravados só por `ciencia_dados`, `data_science` ou `mineracao_dados` saem de `hits.jsonl`; o índice `seen_controle.json` é reconstruído a partir do que fica.
+
+## D018 — Corpus de análise e classificação de destinação
+
+**Estado:** atualizada em 2026-10-01.
+
+**Corpus.** Parte de `data/raw/candidatas_search/hits.jsonl`. Entram **apenas contratos** (`document_type = contrato`) cuja `description` casa com o léxico de inclusão em `src/analysis/destinacao_rules.yaml` (texto dobrado, sem acento). Um registo por `numero_controle_pncp` (descrição mais longa se houver duplicata). Classificador `destinacao-2`.
+
+**Descartado no corpus do artigo.** Documentos que não são contrato (incluindo convocações indexadas como outro tipo). A busca pode ainda os ter recolhido; a análise não os usa.
+
+**Classificação.** Oito classes mais residual. A primeira regra que casa na descrição é a classe primária. As outras ficam em `classes_atingidas`. Não é modelo de tópicos. Um curso sobre reconhecimento facial fica em Capacitação, porque o objeto comprado é o curso. Uma passagem sobre o residual, depois da primeira contagem, acrescentou plurais e sinónimos da mesma classe (`cursos`, `formação`, `GPU`, `câmeras de vigilância`, `licito.guru`, tributos). O hash SHA-256 das regras está em `outputs/artigo/metodologia.json`.
+
+**O que não entra no artigo como soma.** Valores monetários reportam-se por mediana e quartis. Há extremos incompatíveis com uma compra isolada.
+

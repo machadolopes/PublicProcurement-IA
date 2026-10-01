@@ -1,4 +1,4 @@
-"""Ponto de entrada: python -m collect probe | pilot | publicacao."""
+"""Ponto de entrada: python -m collect ..."""
 
 from __future__ import annotations
 
@@ -11,9 +11,12 @@ import sys
 from pathlib import Path
 
 from collect import __version__
+from collect.candidatas import collect_candidatas, filter_existing_publicacao
 from collect.client import ConsultaClient
 from collect.config_loader import load_config, repo_root_from
+from collect.itens import collect_itens_for_period
 from collect.publicacao import collect_probe, collect_publicacao
+from collect.search_ia import collect_search_ia
 from collect.store import RawStore, sha256_bytes, utc_now
 
 
@@ -60,7 +63,7 @@ def _write_run_manifest(root: Path, profile: str, config: dict, totals: dict) ->
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _run(profile: str, start: str, end: str, modalidade: int | None) -> int:
+def _run_publicacao(profile: str, start: str, end: str, modalidade: int | None) -> int:
     root = repo_root_from(Path.cwd())
     config = load_config(root / "config.yaml")
     _require_hashseed(config)
@@ -89,37 +92,146 @@ def _run(profile: str, start: str, end: str, modalidade: int | None) -> int:
     return 0
 
 
+def _run_candidatas(profile: str, start: str, end: str) -> int:
+    root = repo_root_from(Path.cwd())
+    config = load_config(root / "config.yaml")
+    _require_hashseed(config)
+    _configure_log(root)
+    store = RawStore(root)
+    try:
+        with ConsultaClient(config) as client:
+            totals = collect_candidatas(config, root, start, end, client, store)
+    except Exception:
+        logging.getLogger("collect").exception("Coleta de candidatas interrompida.")
+        return 1
+    _write_run_manifest(root, profile, config, totals)
+    logging.getLogger("collect").info("Totais candidatas: %s", totals)
+    return 0
+
+
+def _run_itens(profile: str, start: str, end: str) -> int:
+    root = repo_root_from(Path.cwd())
+    config = load_config(root / "config.yaml")
+    _require_hashseed(config)
+    _configure_log(root)
+    store = RawStore(root)
+    try:
+        with ConsultaClient(config) as client:
+            totals = collect_itens_for_period(config, root, start, end, client, store)
+    except Exception:
+        logging.getLogger("collect").exception("Coleta de itens interrompida.")
+        return 1
+    _write_run_manifest(root, profile, config, totals)
+    logging.getLogger("collect").info("Totais itens: %s", totals)
+    return 0
+
+
+def _run_filter_existing(start: str | None, end: str | None) -> int:
+    root = repo_root_from(Path.cwd())
+    config = load_config(root / "config.yaml")
+    _require_hashseed(config)
+    _configure_log(root)
+    totals = filter_existing_publicacao(root, start=start, end=end)
+    _write_run_manifest(root, "filter-existing", config, totals)
+    logging.getLogger("collect").info("Filtro sobre bruto existente: %s", totals)
+    return 0
+
+
+def _run_search_ia(profile: str, start: str, end: str) -> int:
+    root = repo_root_from(Path.cwd())
+    config = load_config(root / "config.yaml")
+    _require_hashseed(config)
+    _configure_log(root)
+    store = RawStore(root)
+    try:
+        with ConsultaClient(config) as client:
+            totals = collect_search_ia(config, root, start, end, client, store)
+    except Exception:
+        logging.getLogger("collect").exception("Coleta search-ia interrompida.")
+        return 1
+    _write_run_manifest(root, profile, config, totals)
+    logging.getLogger("collect").info("Totais search-ia: %s", totals)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Coleta de contratações no PNCP.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("probe", help="Uma página, com as datas do exemplo oficial.")
-    sub.add_parser("pilot", help="Cabeçalhos do mês piloto, todas as modalidades.")
+    sub.add_parser(
+        "pilot",
+        help="(legado) Cabeçalhos de TODAS as compras do mês piloto — preferir pilot-ia.",
+    )
+    sub.add_parser(
+        "pilot-ia",
+        help="Varre o mês piloto e GRAVA SÓ candidatas cujo objeto casa com termos de IA.",
+    )
+    sub.add_parser(
+        "filter-existing",
+        help="Aplica o dicionário de IA aos records.jsonl já descarregados (sem HTTP).",
+    )
+    sub.add_parser(
+        "pilot-itens",
+        help="Itens das contratações candidatas já coletadas no mês piloto.",
+    )
 
-    full = sub.add_parser("publicacao", help="Cabeçalhos num intervalo do config ou indicado.")
+    full = sub.add_parser("publicacao", help="(legado) Cabeçalhos sem filtro de IA.")
     full.add_argument("--start", default=None)
     full.add_argument("--end", default=None)
     full.add_argument("--modalidade", type=int, default=None)
+
+    ia = sub.add_parser("candidatas", help="Varredura com filtro de IA num intervalo.")
+    ia.add_argument("--start", default=None)
+    ia.add_argument("--end", default=None)
+
+    search = sub.add_parser(
+        "search-ia",
+        help="Busca textual do portal (/api/search/) com queries de IA; grava hits únicos.",
+    )
+    search.add_argument("--start", default=None, help="AAAA-MM-DD (default: window.start)")
+    search.add_argument("--end", default=None, help="AAAA-MM-DD (default: window.end)")
 
     args = parser.parse_args(argv)
     root = repo_root_from(Path.cwd())
     config = load_config(root / "config.yaml")
 
     if args.command == "probe":
-        return _run(
+        return _run_publicacao(
             "probe",
             config["probe"]["start"],
             config["probe"]["end"],
             int(config["probe"]["modalidade"]),
         )
     if args.command == "pilot":
-        return _run("pilot", config["pilot"]["start"], config["pilot"]["end"], None)
-    return _run(
-        "publicacao",
-        args.start or config["window"]["start"],
-        args.end or config["window"]["end"],
-        args.modalidade,
-    )
+        return _run_publicacao("pilot", config["pilot"]["start"], config["pilot"]["end"], None)
+    if args.command == "pilot-ia":
+        return _run_candidatas("pilot-ia", config["pilot"]["start"], config["pilot"]["end"])
+    if args.command == "candidatas":
+        return _run_candidatas(
+            "candidatas",
+            args.start or config["window"]["start"],
+            args.end or config["window"]["end"],
+        )
+    if args.command == "search-ia":
+        return _run_search_ia(
+            "search-ia",
+            args.start or config["window"]["start"],
+            args.end or config["window"]["end"],
+        )
+    if args.command == "filter-existing":
+        return _run_filter_existing(config["pilot"]["start"], config["pilot"]["end"])
+    if args.command == "pilot-itens":
+        return _run_itens("pilot-itens", config["pilot"]["start"], config["pilot"]["end"])
+    if args.command == "publicacao":
+        return _run_publicacao(
+            "publicacao",
+            args.start or config["window"]["start"],
+            args.end or config["window"]["end"],
+            args.modalidade,
+        )
+    parser.error(f"Comando desconhecido: {args.command}")
+    return 2
 
 
 if __name__ == "__main__":

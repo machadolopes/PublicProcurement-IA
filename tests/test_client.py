@@ -7,6 +7,7 @@ def _config() -> dict:
     return {
         "api": {
             "consulta_base_url": "https://pncp.gov.br/api/consulta",
+            "integracao_base_url": "https://pncp.gov.br/api/pncp",
             "publicacao_path": "/v1/contratacoes/publicacao",
         },
         "http": {
@@ -53,6 +54,11 @@ def test_user_agent_do_config_e_ascii():
     config["http"]["max_retries"] = 1
     with ConsultaClient(config, transport=httpx.MockTransport(lambda request: httpx.Response(204))) as client:
         client._client.headers["user-agent"].encode("ascii")
+
+
+def test_429_repete():
+    assert _should_retry(ApiError(429, b"limite", "http://exemplo")) is True
+    assert 429 in RETRY_STATUS
 
 
 def test_400_nao_repete():

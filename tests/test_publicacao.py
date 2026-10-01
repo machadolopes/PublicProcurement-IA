@@ -129,4 +129,4 @@ def test_config_do_repositorio_tem_a_janela_fechada():
     config = load_config(Path("config.yaml"))
     assert config["window"] == {"start": "2021-01-01", "end": "2026-09-30"}
     assert config["pilot"] == {"start": "2026-08-01", "end": "2026-08-31"}
-    assert config["modalidades"] == list(range(1, 14))
+    assert config["modalidades"] == list(range(1, 20))

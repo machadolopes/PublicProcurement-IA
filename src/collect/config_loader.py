@@ -34,11 +34,11 @@ def load_config(path: Path) -> dict[str, Any]:
     if missing:
         raise ConfigError(f"Faltam chaves em config.yaml: {', '.join(missing)}")
     modalidades = data["modalidades"]
-    if modalidades != list(range(1, 14)):
-        raise ConfigError(
-            "modalidades tem de ser a lista 1–13 da secção 5.2 do manual de consultas. "
-            "Não altere esta lista sem registar a decisão e a fonte."
-        )
+    if not isinstance(modalidades, list) or not modalidades:
+        raise ConfigError("modalidades tem de ser uma lista não vazia.")
+    if modalidades != sorted(modalidades) or any(not isinstance(m, int) or m < 1 for m in modalidades):
+        raise ConfigError("modalidades tem de ser inteiros positivos em ordem crescente.")
+    # Congelada em config.yaml a partir da lista viva (D013). Não editar sem atualizar decisions.md.
     if int(data["collect"]["chunk_days"]) < 1:
         raise ConfigError("collect.chunk_days tem de ser pelo menos 1.")
     return data

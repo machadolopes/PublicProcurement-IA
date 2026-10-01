@@ -1,0 +1,211 @@
+# Regras da classificação de destinação (artigo).
+# Texto já dobrado: minúsculas, sem acento. A primeira classe que casa ganha.
+# As outras classes que também casam ficam em classes_atingidas.
+schema_version: 1
+prioridade: primeira_classe_que_casa
+campo: description
+
+inclusao:
+  - id: inteligencia_artificial
+    pattern: 'inteligencia artificial'
+  - id: ia_generativa
+    pattern: 'ia generativa'
+  - id: machine_learning
+    pattern: 'machine learning'
+  - id: deep_learning
+    pattern: 'deep learning'
+  - id: redes_neurais
+    pattern: 'redes neurais'
+  - id: aprendizado_de_maquina
+    pattern: 'aprendizado de maquina'
+  - id: aprendizagem_de_maquina
+    pattern: 'aprendizagem de maquina'
+  - id: visao_computacional
+    pattern: 'visao computacional'
+  - id: reconhecimento_facial
+    pattern: 'reconhecimento facial'
+  - id: chatbot
+    pattern: '\bchatbot\b'
+  - id: chatgpt
+    pattern: 'chatgpt|chat gpt'
+  - id: copilot
+    pattern: '\bcopilot\b'
+  - id: claude
+    pattern: '\bclaude\b'
+  - id: gemini
+    pattern: '\bgemini\b'
+  - id: openai
+    pattern: '\bopenai\b|open ai'
+  - id: anthropic
+    pattern: '\banthropic\b'
+
+classes:
+  - id: capacitacao
+    rotulo: Capacitação
+    priority: 1
+    definicao: >
+      O objeto comprado é o próprio curso, inscrição, palestra ou docência,
+      mesmo quando o tema do curso é outra classe.
+    patterns:
+      - '\bcapacitacao\b'
+      - '\bcurso\b'
+      - '\bcursos\b'
+      - '\binscricao\b'
+      - '\binscricoes\b'
+      - '\bpalestra\b'
+      - '\bpalestras\b'
+      - '\bpalestrante\b'
+      - '\bdocente\b'
+      - '\bdocencia\b'
+      - '\bmasterclass\b'
+      - '\bworkshop\b'
+      - '\bworkshops\b'
+      - '\btreinamento\b'
+      - '\btreinamentos\b'
+      - '\baperfeicoamento\b'
+      - '\bcongresso\b'
+      - '\bcongressos\b'
+      - '\bseminario\b'
+      - '\bseminarios\b'
+      - '\bconteudista\b'
+      - '\binstrutor\b'
+      - '\binstrutora\b'
+      - '\boficina\b'
+      - '\boficinas\b'
+      - '\bsimposio\b'
+      - '\bsimposios\b'
+      - '\bformacao\b'
+      - 'pos-graduacao'
+      - 'pos graduacao'
+      - '\bespecializacao\b'
+      - '\bimersao\b'
+      - '\bmentoria\b'
+      - '\baula\b'
+      - '\baulas\b'
+      - '\bcapacitacoes\b'
+  - id: reconhecimento_facial
+    rotulo: Reconhecimento facial
+    priority: 2
+    definicao: >
+      Ponto eletrônico, catraca, biometria ou controle de acesso por face.
+    patterns:
+      - 'reconhecimento facial'
+      - 'leitura facial'
+      - 'biometria facial'
+      - 'reconhecimento de face'
+      - 'deteccao de face'
+      - '\bcatraca\b'
+      - 'relogio de ponto'
+      - 'ponto eletronico'
+      - 'controle de acesso'
+      - 'controlador de acesso'
+  - id: videomonitoramento
+    rotulo: Videomonitoramento
+    priority: 3
+    definicao: >
+      Câmeras, leitura de placas ou cidade inteligente, quando o objeto é o
+      sistema de monitoramento e não um curso sobre o tema.
+    patterns:
+      - 'videomonitoramento'
+      - 'video monitoramento'
+      - 'monitoramento inteligente'
+      - 'leitura de placa'
+      - '\blpr\b'
+      - 'cidade inteligente'
+      - 'cidades inteligentes'
+      - '\bcftv\b'
+      - 'camera ip'
+      - 'cameras ip'
+      - 'camera de vigilancia'
+      - 'cameras de vigilancia'
+      - '\bnvr\b'
+  - id: chatbot
+    rotulo: Chatbot
+    priority: 4
+    definicao: Atendimento automatizado por conversa, WhatsApp ou call center.
+    patterns:
+      - '\bchatbot\b'
+      - 'chat bot'
+      - '\bwhatsapp\b'
+      - '\bomnichannel\b'
+      - 'autoatendimento'
+      - 'call center'
+      - 'callcenter'
+  - id: ferramenta_oficio
+    rotulo: Ferramenta de ofício
+    priority: 5
+    definicao: >
+      Produto nomeado para redigir ou apoiar o trabalho jurídico ou de
+      licitação (MinutaIA, SollAi e nomes equivalentes vistos no corpus).
+    patterns:
+      - 'minutaia'
+      - 'minuta ia'
+      - '\bsollai\b'
+      - 'soll ai'
+      - '\bnoharm\b'
+      - 'opusclip'
+      - 'forum iah'
+      - 'licito.guru'
+      - 'licito guru'
+  - id: licenca_assistente
+    rotulo: Licença de assistente
+    priority: 6
+    definicao: >
+      Assinatura ou licença de um assistente nomeado (ChatGPT, Claude,
+      Copilot, Gemini, Adapta e equivalentes).
+    patterns:
+      - 'chatgpt'
+      - 'chat gpt'
+      - '\bclaude\b'
+      - '\bcopilot\b'
+      - '\bgemini\b'
+      - '\badapta\b'
+      - '\bopenai\b'
+      - 'open ai'
+      - '\banthropic\b'
+      - '\bmidjourney\b'
+      - '\bllama\b'
+      - '\bgrok\b'
+      - '\bdeepseek\b'
+  - id: infraestrutura
+    rotulo: Infraestrutura
+    priority: 7
+    definicao: >
+      Nuvem, notebook ou equipamento cujo objeto é a infraestrutura para
+      inteligência artificial, e não o serviço que corre nela.
+    patterns:
+      - 'computacao em nuvem'
+      - 'cloud computing'
+      - '\bnotebook\b'
+      - '\bnotebooks\b'
+      - '\bnpu\b'
+      - '\bgpu\b'
+      - '\bgpus\b'
+      - '\bworkstation\b'
+      - '\bworkstations\b'
+      - 'servidor dedicado'
+  - id: sistema_gestao
+    rotulo: Sistema de gestão
+    priority: 8
+    definicao: >
+      Software ou plataforma de gestão (educação, saúde, tributos, RH) em
+      que a inteligência artificial aparece como módulo.
+    patterns:
+      - 'software de gestao'
+      - 'sistema de gestao'
+      - 'plataforma de gestao'
+      - 'gestao educacional'
+      - 'gestao da saude'
+      - 'interoperabilidade'
+      - 'software integrado'
+      - 'sistema integrado'
+      - 'fiscalizacao tributaria'
+      - 'inteligencia artificial de tributos'
+  - id: residual
+    rotulo: Residual
+    priority: 9
+    definicao: >
+      A frase de inclusão está na descrição, mas nenhuma das oito classes
+      casou. Inclui menção incidental (nome do órgão, material de consumo,
+      deslocamento).
+    patterns: []

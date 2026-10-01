@@ -262,8 +262,8 @@ Também não se assume que `GET /api/consulta/v1/orgaos/{cnpj}/compras/{ano}/{se
 - Propostas, atas, contratos e PCA: página padrão até 500, teto 500.
 - Itens: `pagina` e `tamanhoPagina` existem; teto não documentado.
 - Intervalo máximo `dataInicial`–`dataFinal`: não documentado. O piloto começa com janelas curtas (um dia, depois um mês) e só alarga se a API devolver o recorte completo (`totalRegistros` coerente com a soma das páginas).
-- Rate limit: não documentado. Não inventar um número “oficial”.
-- Retentativas: o manual não define. 400 e 422 são erro de pedido (não repetir às cegas). 500 e falha de rede podem ser repetidos. 204 e `empty: true` são sucesso sem registos, não erro.
+- Rate limit: **não documentado no manual**, mas a API devolve HTTP 429 com HTML “Limite de requisições excedido” (observado em 2026-09-30; sem cabeçalho `Retry-After`). Ver D014.
+- Retentativas: o manual não define. 400 e 422 são erro de pedido (não repetir às cegas). 429, 500 e falha de rede são repetidos. 204 e `empty: true` são sucesso sem registos, não erro.
 - `valorTotalEstimado` e valores de item sigiloso voltam 0. Zero não é “compra de valor nulo”; é valor oculto ou ausente. A análise tem de separar essas situações com `orcamentoSigiloso` / `temResultado`, senão a mediana fica enviesada para baixo.
 - `objetoCompra` trunca em 5120 caracteres e `descricao` do item em 2048. Objetos longos podem perder a menção a IA. Quantificar no piloto a fração de textos no limite.
 
@@ -293,8 +293,15 @@ Não coletar o universo inteiro de itens na primeira passagem.
 
 Checkpoint previsto, ainda sem código: ficheiro por modalidade e por janela de datas, com a última página confirmada, para retomar sem repetir páginas já gravadas. Duplicatas pelo `numeroControlePNCP` são contadas, não fundidas no bruto; a deduplicação é etapa posterior.
 
-## 10. O que falta antes de escrever o cliente
+## 11. Achados da sonda e do piloto (2026-09-30)
 
-- Confirmação desta leitura, em especial da proposta da secção 9 e do mês do piloto.
-- Uma chamada real (piloto mínimo: um dia, uma modalidade) para arquivar o JSON de resposta e o OpenAPI, e para decidir `cnpj` versus `cnpjOrgao` nas atas.
-- Releitura das secções 10.13, 6.3 e 6.6 na v. 2.6 quando a página deixar de responder 500, para ver se algum nome de campo mudou depois de 11/06/2026.
+Validado ao vivo, não só no manual:
+
+1. Envelope de `/v1/contratacoes/publicacao` confirma `data`, `totalRegistros`, `totalPaginas`, `numeroPagina`, `paginasRestantes`, `empty`.
+2. Nomes reais de instrumento: `tipoInstrumentoConvocatorioCodigo` / `tipoInstrumentoConvocatorioNome`.
+3. Campos presentes além do PDF de consultas: `emendaParlamentar`, `fontesOrcamentarias`, `linkProcessoEletronico`, `dataAtualizacaoGlobal`.
+4. `poderId` pode ser `N` (além de L/E/J).
+5. `valorTotalHomologado` pode ser `null`.
+6. Itens: `GET /api/pncp/v1/orgaos/{cnpj}/compras/{ano}/{sequencial}/itens` sem token; corpo = **lista** JSON. Campos `situacaoCompraItem`, `tipoBeneficio` (sem sufixo `Id` no JSON observado), e `imagem`.
+7. Modalidades ativas: 1–19 via `/api/pncp/v1/modalidades?statusAtivo=true`. `/api/consulta/v1/modalidades` = 404.
+8. HTTP 429 existe na prática; o manual não o lista.

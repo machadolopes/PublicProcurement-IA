@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +27,6 @@ def collect_publicacao(
     store = store or RawStore(root)
     modalidades = modalidades if modalidades is not None else list(config["modalidades"])
     chunk_days = int(config["collect"]["chunk_days"])
-    pause = float(config["http"]["pause_seconds"])
     totals = {"pages": 0, "records": 0, "empty_windows": 0, "skipped_complete": 0}
 
     for modalidade in modalidades:
@@ -44,7 +42,6 @@ def collect_publicacao(
                 modalidade=modalidade,
                 data_inicial=data_inicial,
                 data_final=data_final,
-                pause=pause,
                 tamanho_pagina=tamanho_pagina,
             )
             totals["pages"] += result["pages"]
@@ -67,7 +64,6 @@ def collect_probe(config: dict[str, Any], root: Path, client: Any, store: RawSto
         modalidade=int(probe["modalidade"]),
         data_inicial=data_inicial,
         data_final=data_final,
-        pause=0,
         tamanho_pagina=int(probe["tamanho_pagina"]),
         max_pages=1,
     )
@@ -86,7 +82,6 @@ def _collect_window(
     modalidade: int,
     data_inicial: str,
     data_final: str,
-    pause: float,
     tamanho_pagina: int | None,
     max_pages: int | None = None,
 ) -> dict[str, int]:
@@ -108,8 +103,6 @@ def _collect_window(
     new_records = 0
 
     while max_pages is None or pages_fetched < max_pages:
-        if pages_fetched > 0 and pause:
-            time.sleep(pause)
         status, body = client.fetch_publicacao(
             data_inicial,
             data_final,

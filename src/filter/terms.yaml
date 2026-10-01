@@ -1,0 +1,123 @@
+# Dicionario lexical para candidatas a compras de IA (camada de recall).
+# Versionado. Ampliacao semi-indutiva exige aprovacao humana (nao automatica).
+#
+# O texto e normalizado sem diacriticos (NFKD) antes do match; padroes em ASCII.
+# Campos: id, pattern (regex Python), strength, notes.
+
+schema_version: 1
+
+strong:
+  - id: inteligencia_artificial
+    pattern: 'inteligencias?\s+artificial(?:is)?'
+    notes: Forma canonica em portugues, singular/plural (acentos removidos na normalizacao).
+  - id: ia_generativa
+    pattern: 'i\.?\s*a\.?\s+generativa|ia\s+generativa'
+    notes: Explicitamente generativa.
+  - id: machine_learning
+    pattern: 'machine\s*learning|aprendizado\s+de\s+maquina|aprendizagem\s+de\s+maquina'
+    notes: PT e EN.
+  - id: deep_learning
+    pattern: 'deep\s*learning|aprendizado\s+profundo|aprendizagem\s+profunda'
+    notes: PT e EN.
+  - id: redes_neurais
+    pattern: 'redes?\s+neurais?'
+    notes: Inclui rede neural / redes neurais.
+  - id: pln
+    pattern: 'processamento\s+de\s+linguagem\s+natural|\bpln\b|\bnlp\b'
+    notes: PLN/NLP.
+  - id: visao_computacional
+    pattern: 'visao\s+computacional'
+    notes: Visao computacional.
+  - id: reconhecimento_facial
+    pattern: 'reconhecimento\s+facial'
+    notes: Frequentemente ligado a IA; rever na validacao humana.
+  - id: reconhecimento_imagens
+    pattern: 'reconhecimento\s+de\s+imagens?'
+    notes: Pode ser classico; strong para recall.
+  - id: reconhecimento_voz
+    pattern: 'reconhecimento\s+de\s+voz|speech\s+to\s+text|speech-to-text'
+    notes: ASR.
+  - id: chatbot
+    pattern: '\bchatbots?\b|assistente\s+virtual|agente\s+conversacional'
+    notes: Chatbot e sinonimos proximos.
+  - id: llm
+    pattern: '\bllms?\b|modelo\s+de\s+linguagem|large\s+language\s+model'
+    notes: LLM / modelo de linguagem.
+  - id: chatgpt
+    pattern: '\bchatgpt\b|\bgpt-?\d'
+    notes: Produtos/modelos GPT.
+  - id: copilot
+    pattern: '\bcopilot\b'
+    notes: Microsoft Copilot e afins; validar contexto humano depois.
+  - id: openai
+    pattern: '\bopenai\b'
+    notes: Fornecedor/produto.
+  - id: ciencia_dados
+    pattern: 'ciencia\s+de\s+dados|data\s+science'
+    notes: Amplo; strong para recall, refinar depois.
+  - id: mineracao_dados
+    pattern: 'mineracao\s+de\s+dados|data\s+mining'
+    notes: Pode ser BI classico; strong para recall.
+  - id: analise_preditiva
+    pattern: 'analise\s+preditiva|modelagem\s+preditiva|modelo\s+preditivo'
+    notes: Predicao.
+  - id: algoritmo_classificacao
+    pattern: 'algoritmo\s+de\s+classificacao'
+    notes: Explicitamente ML.
+  - id: ocr_inteligente
+    pattern: 'ocr\s+inteligente'
+    notes: OCR + inteligente.
+  - id: automacao_inteligente
+    pattern: 'automacao\s+inteligente'
+    notes: Distinto de RPA generico.
+  - id: analise_sentimentos
+    pattern: 'analise\s+de\s+sentimentos?'
+    notes: NLP classico.
+  - id: transcricacao_automatica
+    pattern: 'transcricao\s+automatica'
+    notes: Pode ser ASR; strong para recall.
+
+ambiguous:
+  - id: sigla_ia
+    pattern: '\bia\b|i\.a\.?'
+    notes: >
+      Sigla IA (contigua) ou I.A. (pontuada sem espaco).
+      Exige contexto tecnologico no codigo — "lei. a" / fim de frase nao casa.
+  - id: sigla_ai
+    pattern: '\bai\b|a\.i\.?'
+    notes: >
+      Sigla AI ou A.I. sem espaco entre letras.
+      "referencia. informamos" e "e.t.a. i" nao devem casar.
+  - id: rpa
+    pattern: '\brpa\b|automacao\s+robotica\s+de\s+processos'
+    notes: RPA muitas vezes sem IA; drones (aeronave remotamente pilotada) excluidos no codigo.
+  - id: deteccao_fraude
+    pattern: 'deteccao\s+de\s+fraudes?'
+    notes: Pode ser regra fixa.
+  - id: gemini
+    pattern: '\bgemini\b'
+    notes: Produto Google ou nome proprio / marca.
+  - id: claude
+    pattern: '\bclaude\b'
+    notes: Modelo Anthropic ou nome proprio.
+
+exclusions:
+  - id: inseminacao_artificial
+    pattern: 'inseminacao\s+artificial'
+    notes: Veterinaria / pecuaria — nao e IA.
+  - id: inteligencia_policial
+    pattern: 'inteligencia\s+policial|inteligencia\s+de\s+seguranca'
+    notes: Inteligencia no sentido de espionagem/seguranca, sem artificial.
+  - id: inteligencia_mercado
+    pattern: 'inteligencia\s+de\s+mercado|business\s+intelligence|\bbi\b'
+    notes: BI classico quando isolado de termos de ML/IA.
+  - id: inteligencia_emocional
+    pattern: 'inteligencia\s+emocional'
+    notes: RH / psicologia.
+  - id: anexo_ia_ib
+    pattern: 'anexo\s+i,?\s*ia\s+e\s+ib|anexos?\s+i+a\b'
+    notes: Rotulos de anexos do edital (Anexo I, IA e IB), nao inteligencia artificial.
+
+search_fields:
+  - objetoCompra
+  - informacaoComplementar
