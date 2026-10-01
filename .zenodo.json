@@ -1,0 +1,30 @@
+{
+  "title": "PublicProcurement-IA: Brazilian public AI procurement corpus from PNCP",
+  "upload_type": "dataset",
+  "description": "<p>Reproducible pipeline and analysis corpus for mapping Brazilian public contracts related to artificial intelligence in the Portal Nacional de Contratações Públicas (PNCP).</p><p>This deposit packages (1) the software snapshot from the GitHub repository, (2) raw PNCP search hits used in the study, and (3) derived analysis outputs (classified contracts, figures, briefing).</p><p><strong>Unit of analysis:</strong> contracts only (<code>document_type=contrato</code>) whose description matches the inclusion lexicon. Window: 2021-01-01 to 2026-09-30.</p><p>Source portal: <a href=\"https://pncp.gov.br\">pncp.gov.br</a>. Search endpoint used for discovery: <code>GET /api/search/</code>.</p>",
+  "creators": [
+    {
+      "name": "Lopes, Marcel",
+      "affiliation": "",
+      "orcid": ""
+    }
+  ],
+  "keywords": [
+    "public procurement",
+    "artificial intelligence",
+    "PNCP",
+    "Brazil",
+    "open government data"
+  ],
+  "license": "cc-by-4.0",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/machadolopes/PublicProcurement-IA",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [],
+  "access_right": "open",
+  "language": "por"
+}

@@ -8,4 +8,7 @@ data/interim/**
 data/processed/**
 !data/raw/.gitkeep
 outputs/
+deposit/*.zip
+deposit/PublicProcurement-IA-data-*/
+!deposit/README.md
 .DS_Store

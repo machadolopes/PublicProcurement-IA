@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software or dataset, please cite it using these metadata."
+title: "PublicProcurement-IA: Brazilian public AI procurement corpus from PNCP"
+type: dataset
+authors:
+  - family-names: Lopes
+    given-names: Marcel
+    email: marcel.felipe@gmail.com
+repository-code: "https://github.com/machadolopes/PublicProcurement-IA"
+url: "https://github.com/machadolopes/PublicProcurement-IA"
+abstract: >-
+  Reproducible pipeline and analysis corpus for mapping Brazilian public
+  contracts related to artificial intelligence in the Portal Nacional de
+  Contratações Públicas (PNCP). Includes lexical search queries, contract-only
+  destination classification, association tables (class × procurement modality),
+  and article figures. Raw search hits and derived outputs are deposited with
+  the release assets / Zenodo package.
+keywords:
+  - public procurement
+  - artificial intelligence
+  - PNCP
+  - Brazil
+  - open government data
+license: MIT
+version: "0.1.0"
+date-released: "2026-10-01"
